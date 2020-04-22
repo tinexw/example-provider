@@ -1,6 +1,6 @@
 PACTICIPANT := "pactflow-example-provider"
 WEBHOOK_UUID := "c76b601e-d66a-4eb1-88a4-6ebc50c0df8b"
-TRIGGER_PROVIDER_BUILD_URL := "https://api.travis-ci.com/repo/pactflow%2Fexample-provider/requests"
+TRIGGER_PROVIDER_BUILD_URL := "https://api.travis-ci.com/repo/tinexw%2Fexample-provider/requests"
 
 # Only deploy from master
 ifeq ($(TRAVIS_BRANCH),master)
