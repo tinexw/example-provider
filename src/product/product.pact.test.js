@@ -33,39 +33,35 @@ describe("Pact Verification", () => {
       //consumerVersionTag: ['master', 'prod'], //the old way of specifying which pacts to verify
       consumerVersionSelectors: [{ tag: 'master', latest: true }, { tag: 'prod', latest: true } ], // the new way of specifying which pacts to verify
       pactBrokerUrl: process.env.PACT_BROKER_BASE_URL,
-      enablePending: false
+      enablePending: false,
+      includeWipPactsSince: undefined
+    }
+
+    const stateHandlers = {
+      "product with ID 10 exists": () => {
+        controller.repository.products = new Map([
+          ["10", new Product("10", "CREDIT_CARD", "28 Degrees", "v1")]
+        ]);
+      },
+      "product with ID 11 does not exist": () => {
+        controller.repository.products = new Map();
+      }
+    }
+
+    const requestFilter = (req, res, next) => {
+      if (!req.headers["authorization"]) {
+        next();
+        return;
+      }
+      req.headers["authorization"] = `Bearer ${new Date().toISOString()}`;
+      next();
     }
 
     const opts = {
-        ...baseOpts,
-        ...(process.env.PACT_URL ? pactChangedOpts : fetchPactsDynamicallyOpts),
-        stateHandlers: {
-          "product with ID 10 exists": () => {
-            controller.repository.products = new Map([
-                ["10", new Product("10", "CREDIT_CARD", "28 Degrees", "v1")]
-            ]);
-          },
-          "products exist": () => {
-            controller.repository.products = new Map([
-              ["09", new Product("09", "CREDIT_CARD", "Gem Visa", "v1")],
-              ["10", new Product("10", "CREDIT_CARD", "28 Degrees", "v1")]
-            ]);
-          },
-          "no products exist": () => {
-            controller.repository.products = new Map();
-          },
-          "product with ID 11 does not exist": () => {
-            controller.repository.products = new Map();
-          },
-        },
-        requestFilter: (req, res, next) => {
-          if (!req.headers["authorization"]) {
-            next();
-            return;
-          }
-          req.headers["authorization"] = `Bearer ${new Date().toISOString()}`;
-          next();
-        },
+      ...baseOpts,
+      ...(process.env.PACT_URL ? pactChangedOpts : fetchPactsDynamicallyOpts),
+      stateHandlers: stateHandlers,
+      requestFilter: requestFilter
     };
 
     return new Verifier(opts).verifyProvider()
@@ -75,6 +71,6 @@ describe("Pact Verification", () => {
       })
       .finally(() => {
         server.close();
-    });
+      });
   })
 });
