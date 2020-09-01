@@ -4,7 +4,6 @@ class Product {
         this.type = type;
         this.name = name;
         this.version = version;
-        this.color = "red";
     }
 }
 
